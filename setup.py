@@ -1,18 +1,34 @@
 import sys
 from setuptools import setup
+from setuptools.command.test import test as TestCommand
 
-IS_PY2 = sys.version_info[0] == 2
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = []
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args)
+        sys.exit(errno)
+
 
 _requirements = ['requests_cache', 'requests']
 _modules = ['tvdb_api', 'tvdb_ui', 'tvdb_exceptions']
 
-if IS_PY2:
-    _modules.append('tvdb_cache')
-
 
 setup(
 name = 'tvdb_api',
-version='1.10',
+version='2.0-dev',
 
 author='dbr/Ben',
 description='Interface to thetvdb.com',
@@ -28,12 +44,15 @@ Basic usage is:
 >>> ep = t['My Name Is Earl'][1][22]
 >>> ep
 <Episode 01x22 - Stole a Badge>
->>> ep['episodename']
+>>> ep['episodeName']
 u'Stole a Badge'
 """,
 
 py_modules = _modules,
 install_requires = _requirements,
+
+tests_require=['pytest'],
+cmdclass = {'test': PyTest},
 
 classifiers=[
     "Intended Audience :: Developers",
@@ -45,6 +64,8 @@ classifiers=[
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.3",
     "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
     "Topic :: Multimedia",
     "Topic :: Utilities",
     "Topic :: Software Development :: Libraries :: Python Modules",

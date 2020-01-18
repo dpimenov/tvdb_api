@@ -101,6 +101,12 @@ class TestTvdbErrors:
         with pytest.raises(tvdb_shownotfound):
             self.t['the fake show thingy']
 
+    def test_shownotfound(self):
+        """Checks exception is thrown when episode doesn't exist.
+        """
+        with pytest.raises(tvdb_shownotfound):
+            self.t[999999999999999]
+
     def test_episodenotfound(self):
         """Checks exception is raised for non-existent episode
         """
@@ -276,8 +282,9 @@ class TestTvdbBanners:
         """
         for banner_type, banner_data in self.t['scrubs']['_banners'].items():
             for res, res_data in banner_data.items():
-                for bid, banner_info in res_data.items():
-                    assert banner_info['_bannerpath'].startswith("http://") == True
+                if res != 'raw':
+                    for bid, banner_info in res_data.items():
+                        assert banner_info['_bannerpath'].startswith("http://") == True
 
     @pytest.mark.skip('В новом API нет картинки у эпизода')
     def test_episode_image(self):
